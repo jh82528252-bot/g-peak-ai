@@ -1,140 +1,342 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>G-PEAK AI | 경남 전기차 충전 관리</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>G-Peak-ai | 경남용 AI 기반 EV 충전 피크 로드 관리 시스템</title>
   <style>
-    * { box-sizing: border-box; }
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --text: #141c24;
+      --muted: #5c6b7a;
+      --primary: #0f6cbd;
+      --primary-soft: #e7f2fc;
+      --ok: #137333;
+      --ok-bg: #e6f4ea;
+      --warn: #b06000;
+      --warn-bg: #fef7e0;
+      --high: #c5221f;
+      --high-bg: #fce8e6;
+      --border: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0b1220;
-      color: #e8eef8;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 24px 16px 60px;
     }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
     header {
-      padding: 22px 7%;
-      border-bottom: 1px solid #263449;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      background: linear-gradient(135deg, #0b3c6d, #0f6cbd);
+      color: #fff;
+      padding: 28px 24px;
+      border-radius: 16px;
+      margin-bottom: 20px;
     }
-    .logo { font-size: 23px; font-weight: bold; color: #56d6a0; }
-    .tag { color: #9aabc2; font-size: 13px; }
-    main { max-width: 1150px; margin: 45px auto; padding: 0 22px; }
-    .intro { margin-bottom: 35px; }
-    .intro h1 { font-size: 34px; margin-bottom: 12px; }
-    .intro p { color: #9aabc2; line-height: 1.7; }
-    .status {
-      display: inline-block; padding: 7px 12px;
-      background: #18352f; color: #56d6a0;
-      border-radius: 20px; font-size: 12px;
+
+    .badge {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.18);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 10px;
     }
-    .grid {
+
+    header h1 {
+      font-size: 26px;
+      margin-bottom: 6px;
+    }
+
+    header p {
+      font-size: 14px;
+      opacity: 0.92;
+    }
+
+    .kpi-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 18px; margin: 25px 0;
+      gap: 14px;
+      margin-bottom: 20px;
     }
+
     .card {
-      background: #151f30; border: 1px solid #29384e;
-      border-radius: 13px; padding: 23px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
     }
-    .card p { color: #9aabc2; margin: 0 0 15px; }
-    .number { font-size: 29px; font-weight: bold; }
-    .unit { color: #9aabc2; font-size: 14px; }
-    .panel {
-      background: #151f30; border: 1px solid #29384e;
-      border-radius: 13px; padding: 25px; margin-top: 20px;
+
+    .kpi-label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
     }
-    .panel h2 { font-size: 20px; }
-    .bar-row { margin: 22px 0; }
-    .bar-label { display: flex; justify-content: space-between; margin-bottom: 9px; }
-    .bar-bg { height: 13px; background: #29384e; border-radius: 10px; overflow: hidden; }
-    .bar { height: 100%; background: #45c99a; border-radius: 10px; }
-    button {
-      background: #39bd8b; color: #071b16; border: 0;
-      padding: 13px 20px; border-radius: 8px;
-      font-weight: bold; cursor: pointer; font-size: 15px;
+
+    .kpi-value {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 4px;
     }
-    button:hover { background: #61d9aa; }
-    #result { color: #56d6a0; line-height: 1.8; margin-top: 18px; }
-    footer { text-align: center; padding: 35px; color: #71829b; font-size: 12px; }
+
+    .kpi-sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .section {
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    select, button {
+      font-family: inherit;
+      font-size: 14px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    button.primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      font-weight: 600;
+    }
+
+    .station-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+    }
+
+    .station-item {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      background: #fff;
+    }
+
+    .station-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .station-name {
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .tag {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .tag.low { background: var(--ok-bg); color: var(--ok); }
+    .tag.mid { background: var(--warn-bg); color: var(--warn); }
+    .tag.high { background: var(--high-bg); color: var(--high); }
+
+    .meta {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .rec-box {
+      background: var(--primary-soft);
+      color: #0b3c6d;
+      font-size: 13px;
+      padding: 10px 12px;
+      border-radius: 8px;
+    }
+
+    .time-bars {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+    }
+
+    .time-slot {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+      background: #fafbfd;
+    }
+
+    .time-slot strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .time-slot span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .note {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
-  <header>
-    <div class="logo">⚡ G-PEAK AI</div>
-    <div class="tag">GYEONGNAM · SMART ENERGY</div>
-  </header>
+  <div class="container">
+    <header>
+      <div class="badge">G-Peak-ai 해커톤 프로토타입</div>
+      <h1>경남용 AI 기반 EV 충전 피크 로드 관리 시스템</h1>
+      <p>피크 시간대 충전 집중을 완화하고, 여유 충전소·시간대로 유도하는 스마트 가이드</p>
+    </header>
 
-  <main>
-    <section class="intro">
-      <span class="status">● PROTOTYPE DASHBOARD</span>
-      <h1>경남 공공 전기차 충전소<br>AI 피크 부하 관리 시스템</h1>
-      <p>
-        AI 기반 충전 수요 예측과 부하 분산 시뮬레이션으로<br>
-        전력 피크를 줄이고 효율적인 충전 환경을 제안합니다.
-      </p>
+    <section class="kpi-grid">
+      <div class="card">
+        <div class="kpi-label">대상 지역</div>
+        <div class="kpi-value">경상남도</div>
+        <div class="kpi-sub">창원·진주·김해·사천 등 주요 거점</div>
+      </div>
+      <div class="card">
+        <div class="kpi-label">주요 피크 예상 시간대</div>
+        <div class="kpi-value">18:00 ~ 21:00</div>
+        <div class="kpi-sub">퇴근 후 충전 집중 구간 (예시 값)</div>
+      </div>
+      <div class="card">
+        <div class="kpi-label">부하 분산 목표</div>
+        <div class="kpi-value">피크 완화</div>
+        <div class="kpi-sub">혼잡 충전소 → 인근 여유 충전소 유도</div>
+      </div>
     </section>
 
-    <div class="grid">
-      <div class="card">
-        <p>분석 대상 지역</p>
-        <div class="number">경상남도</div>
-        <span class="unit">창원시 시범 분석</span>
+    <section class="card section">
+      <div class="section-title">
+        <span>시간대별 충전 수요 흐름</span>
       </div>
-      <div class="card">
-        <p>충전 수요 예측</p>
-        <div class="number">AI 분석</div>
-        <span class="unit">시간대별 수요 예측 예정</span>
-      </div>
-      <div class="card">
-        <p>부하 관리 목표</p>
-        <div class="number">PEAK ↓</div>
-        <span class="unit">전력 집중 완화</span>
-      </div>
-    </div>
-
-    <section class="panel">
-      <h2>충전 부하 분산 시뮬레이션</h2>
-      <p class="tag">아래 수치는 화면 기능 확인을 위한 예시 시뮬레이션입니다.</p>
-
-      <div class="bar-row">
-        <div class="bar-label">
-          <span>관리 전 예상 피크 부하</span>
-          <strong id="before">100%</strong>
-        </div>
-        <div class="bar-bg"><div class="bar" style="width:100%; background:#e6a34b"></div></div>
-      </div>
-
-      <div class="bar-row">
-        <div class="bar-label">
-          <span>관리 후 시뮬레이션 부하</span>
-          <strong id="after">--</strong>
-        </div>
-        <div class="bar-bg"><div class="bar" id="afterBar" style="width:0%"></div></div>
-      </div>
-
-      <button onclick="runSimulation()">부하 분산 시뮬레이션 실행</button>
-      <div id="result">버튼을 눌러 예시 시뮬레이션을 실행해 보세요.</div>
+      <div class="time-bars" id="timeSlots"></div>
+      <p class="note">* 시간대별 수요 및 피크 분산 기준 조사 내용으로 업데이트 예정</p>
     </section>
-  </main>
 
-  <footer>
-    G-PEAK AI · AI & DX HACKATHON PROJECT · Prototype
-  </footer>
+    <section class="card section">
+      <div class="section-title">
+        <span>충전소 현황 및 분산 추천</span>
+        <div class="controls">
+          <select id="regionFilter">
+            <option value="ALL">전체 지역</option>
+            <option value="창원">창원</option>
+            <option value="진주">진주</option>
+            <option value="김해">김해</option>
+            <option value="사천">사천</option>
+          </select>
+          <button class="primary" id="optimizeBtn">부하 분산 추천 보기</button>
+        </div>
+      </div>
+      <div class="station-list" id="stationList"></div>
+      <p class="note">* 경남 충전소 조사 목록으로 교체할 샘플 데이터입니다.</p>
+    </section>
+  </div>
 
   <script>
-    function runSimulation() {
-      const managedLoad = 72;
-      document.getElementById("after").textContent = managedLoad + "%";
-      document.getElementById("afterBar").style.width = managedLoad + "%";
-      document.getElementById("result").innerHTML =
-        "시뮬레이션 완료!<br>" +
-        "예시 기준 피크 부하 감소율: " + (100 - managedLoad) + "%<br>" +
-        "※ 실제 측정 데이터가 아닌 기능 확인용 예시 결과입니다.";
+    const stations = [
+      { name: "창원중앙 공영충전소 (예시)", region: "창원", type: "급속 4기", load: 88, alt: "인근 완속/심야 충전소 이용 권장" },
+      { name: "진주혁신도시 충전소 (예시)", region: "진주", type: "급속 2기", load: 42, alt: "현재 여유로움 · 즉시 충전 가능" },
+      { name: "김해장유 복합충전소 (예시)", region: "김해", type: "급속 6기", load: 76, alt: "1시간 뒤 또는 인근 거점 이동 추천" },
+      { name: "사천시청 인근 충전소 (예시)", region: "사천", type: "급속 2기", load: 30, alt: "부하 낮음 · 분산 유도 추천 거점" }
+    ];
+
+    const timeSlots = [
+      { time: "00~06시", level: "여유", desc: "경부하 시간대" },
+      { time: "07~10시", level: "보통", desc: "출근 시간대" },
+      { time: "11~17시", level: "여유", desc: "주간 분산 구간" },
+      { time: "18~21시", level: "혼잡", desc: "피크 주의 구간" },
+      { time: "22~24시", level: "보통", desc: "퇴근 후 늦은 충전" }
+    ];
+
+    const stationListEl = document.getElementById("stationList");
+    const regionFilterEl = document.getElementById("regionFilter");
+    const optimizeBtnEl = document.getElementById("optimizeBtn");
+    const timeSlotsEl = document.getElementById("timeSlots");
+
+    function renderTimeSlots() {
+      timeSlotsEl.innerHTML = timeSlots.map(slot => `
+        <div class="time-slot">
+          <strong>${slot.time}</strong>
+          <div>${slot.level}</div>
+          <span>${slot.desc}</span>
+        </div>
+      `).join("");
     }
+
+    function getLoadTag(load) {
+      if (load >= 80) return { cls: "high", text: `혼잡 ${load}%` };
+      if (load >= 50) return { cls: "mid", text: `보통 ${load}%` };
+      return { cls: "low", text: `여유 ${load}%` };
+    }
+
+    function renderStations(onlyRecommended = false) {
+      const selectedRegion = regionFilterEl.value;
+      let filtered = stations.filter(s => selectedRegion === "ALL" || s.region === selectedRegion);
+
+      if (onlyRecommended) {
+        filtered = [...filtered].sort((a, b) => a.load - b.load);
+      }
+
+      stationListEl.innerHTML = filtered.map((s, idx) => {
+        const tag = getLoadTag(s.load);
+        const topBadge = onlyRecommended && idx === 0 ? "★ 추천 1순위 · " : "";
+        return `
+          <div class="station-item">
+            <div class="station-top">
+              <div class="station-name">${topBadge}${s.name}</div>
+              <span class="tag ${tag.cls}">${tag.text}</span>
+            </div>
+            <div class="meta">${s.region} · ${s.type}</div>
+            <div class="rec-box">${s.alt}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    regionFilterEl.addEventListener("change", () => renderStations(false));
+    optimizeBtnEl.addEventListener("click", () => renderStations(true));
+
+    renderTimeSlots();
+    renderStations(false);
   </script>
 </body>
 </html>
