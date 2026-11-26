@@ -1,0 +1,249 @@
+
+import streamlit as st
+import pandas as pd
+import numpy as np
+from sklearn.ensemble import RandomForestRegressor
+
+# --------------------------------
+# 1. 기본 설정
+# --------------------------------
+
+st.set_page_config(
+    page_title="EV Peak Guard AI",
+    page_icon="⚡",
+    layout="wide"
+)
+
+st.title("⚡ EV Peak Guard AI")
+st.subheader("전기차 충전소 전력 피크 예측 및 부하 분산 시스템")
+
+st.write(
+    "AI가 전력 수요를 예측하고 "
+    "충전기별 전력을 분배하여 피크를 관리합니다."
+)
+
+# --------------------------------
+# 2. 사용자 설정
+# --------------------------------
+
+st.sidebar.header("충전소 설정")
+
+charger_count = st.sidebar.slider(
+    "충전기 대수",
+    1, 20, 5
+)
+
+charger_power = st.sidebar.slider(
+    "충전기 1대당 최대 전력 (kW)",
+    3, 22, 7
+)
+
+power_limit = st.sidebar.slider(
+    "충전소 전력 한도 (kW)",
+    5, 200, 25
+)
+
+charging_count = st.sidebar.slider(
+    "현재 충전 중인 차량 수",
+    1, charger_count, min(5, charger_count)
+)
+
+# --------------------------------
+# 3. 가상 전력 데이터 생성
+# --------------------------------
+
+np.random.seed(42)
+
+hours = np.arange(24 * 30)
+
+hour = hours % 24
+day = hours // 24
+
+# 시간대별 기본 전력 사용 패턴
+base_power = (
+    18
+    + 10 * np.exp(-((hour - 19) ** 2) / 15)
+    + 5 * np.exp(-((hour - 12) ** 2) / 20)
+)
+
+# 주말에는 사용량이 조금 달라진다고 가정
+weekend_effect = np.where(day % 7 >= 5, 3, 0)
+
+noise = np.random.normal(0, 2, len(hours))
+
+power_data = np.maximum(
+    base_power + weekend_effect + noise,
+    0
+)
+
+df = pd.DataFrame({
+    "hour": hour,
+    "day": day,
+    "weekend": (day % 7 >= 5).astype(int),
+    "power": power_data
+})
+
+# --------------------------------
+# 4. AI 학습
+# --------------------------------
+
+X = df[["hour", "day", "weekend"]]
+y = df["power"]
+
+model = RandomForestRegressor(
+    n_estimators=100,
+    random_state=42
+)
+
+model.fit(X, y)
+
+# --------------------------------
+# 5. 향후 24시간 전력 예측
+# --------------------------------
+
+future_hour = np.arange(24)
+
+future_day = np.full(24, 30)
+
+future_weekend = np.full(
+    24,
+    int(30 % 7 >= 5)
+)
+
+future = pd.DataFrame({
+    "hour": future_hour,
+    "day": future_day,
+    "weekend": future_weekend
+})
+
+predicted_power = model.predict(future)
+
+forecast = pd.DataFrame({
+    "시간": [f"{h:02d}시" for h in future_hour],
+    "예상 전력(kW)": predicted_power
+})
+
+# --------------------------------
+# 6. 현재 충전 전력 계산
+# --------------------------------
+
+total_demand = charging_count * charger_power
+
+# 전력 한도를 초과하면 비례 배분
+if total_demand > power_limit:
+    allocated_power = power_limit / charging_count
+else:
+    allocated_power = charger_power
+
+total_allocated = allocated_power * charging_count
+
+# --------------------------------
+# 7. 대시보드
+# --------------------------------
+
+st.divider()
+
+col1, col2, col3 = st.columns(3)
+
+col1.metric(
+    "현재 충전 요구 전력",
+    f"{total_demand:.1f} kW"
+)
+
+col2.metric(
+    "충전소 전력 한도",
+    f"{power_limit:.1f} kW"
+)
+
+col3.metric(
+    "분배 후 사용 전력",
+    f"{total_allocated:.1f} kW"
+)
+
+# --------------------------------
+# 8. 피크 위험 판단
+# --------------------------------
+
+st.header("🚨 전력 피크 분석")
+
+if total_demand > power_limit:
+    st.error(
+        f"전력 한도 초과! "
+        f"{total_demand - power_limit:.1f} kW 초과"
+    )
+    st.warning("충전 전력 분산이 필요합니다.")
+else:
+    st.success("현재 충전 전력은 설정한 한도 이내입니다.")
+
+# --------------------------------
+# 9. AI 예측 그래프
+# --------------------------------
+
+st.header("🤖 AI 향후 24시간 전력 예측")
+
+st.line_chart(
+    forecast.set_index("시간")
+)
+
+peak_hour = forecast.loc[
+    forecast["예상 전력(kW)"].idxmax()
+]
+
+st.info(
+    f"예측된 최대 전력 사용 시간: "
+    f"{peak_hour['시간']} / "
+    f"{peak_hour['예상 전력(kW)']:.1f} kW"
+)
+
+# --------------------------------
+# 10. 충전 전력 분배 결과
+# --------------------------------
+
+st.header("🔋 충전기별 전력 분배")
+
+result = pd.DataFrame({
+    "충전기": [
+        f"충전기 {i+1}"
+        for i in range(charging_count)
+    ],
+    "분배 전 요구 전력(kW)": [
+        charger_power
+    ] * charging_count,
+    "분배 후 전력(kW)": [
+        allocated_power
+    ] * charging_count
+})
+
+st.dataframe(
+    result,
+    use_container_width=True,
+    hide_index=True
+)
+
+# --------------------------------
+# 11. 피크 감소 효과
+# --------------------------------
+
+st.header("📊 부하 분산 효과")
+
+before = total_demand
+after = total_allocated
+
+reduction = before - after
+
+a, b, c = st.columns(3)
+
+a.metric("분배 전", f"{before:.1f} kW")
+b.metric("분배 후", f"{after:.1f} kW")
+c.metric("감소 전력", f"{reduction:.1f} kW")
+
+st.bar_chart(
+    pd.DataFrame({
+        "전력(kW)": [before, after]
+    }, index=["분배 전", "분배 후"])
+)
+
+st.caption(
+    "※ 현재 데이터는 프로그램 작동을 위한 가상 데이터입니다. "
+    "AI 예측값과 충전 전력 분배는 실제 충전소 측정값이 아닙니다."
+)
