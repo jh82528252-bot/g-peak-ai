@@ -1,0 +1,140 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>G-PEAK AI | 경남 전기차 충전 관리</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b1220;
+      color: #e8eef8;
+    }
+    header {
+      padding: 22px 7%;
+      border-bottom: 1px solid #263449;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo { font-size: 23px; font-weight: bold; color: #56d6a0; }
+    .tag { color: #9aabc2; font-size: 13px; }
+    main { max-width: 1150px; margin: 45px auto; padding: 0 22px; }
+    .intro { margin-bottom: 35px; }
+    .intro h1 { font-size: 34px; margin-bottom: 12px; }
+    .intro p { color: #9aabc2; line-height: 1.7; }
+    .status {
+      display: inline-block; padding: 7px 12px;
+      background: #18352f; color: #56d6a0;
+      border-radius: 20px; font-size: 12px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 18px; margin: 25px 0;
+    }
+    .card {
+      background: #151f30; border: 1px solid #29384e;
+      border-radius: 13px; padding: 23px;
+    }
+    .card p { color: #9aabc2; margin: 0 0 15px; }
+    .number { font-size: 29px; font-weight: bold; }
+    .unit { color: #9aabc2; font-size: 14px; }
+    .panel {
+      background: #151f30; border: 1px solid #29384e;
+      border-radius: 13px; padding: 25px; margin-top: 20px;
+    }
+    .panel h2 { font-size: 20px; }
+    .bar-row { margin: 22px 0; }
+    .bar-label { display: flex; justify-content: space-between; margin-bottom: 9px; }
+    .bar-bg { height: 13px; background: #29384e; border-radius: 10px; overflow: hidden; }
+    .bar { height: 100%; background: #45c99a; border-radius: 10px; }
+    button {
+      background: #39bd8b; color: #071b16; border: 0;
+      padding: 13px 20px; border-radius: 8px;
+      font-weight: bold; cursor: pointer; font-size: 15px;
+    }
+    button:hover { background: #61d9aa; }
+    #result { color: #56d6a0; line-height: 1.8; margin-top: 18px; }
+    footer { text-align: center; padding: 35px; color: #71829b; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">⚡ G-PEAK AI</div>
+    <div class="tag">GYEONGNAM · SMART ENERGY</div>
+  </header>
+
+  <main>
+    <section class="intro">
+      <span class="status">● PROTOTYPE DASHBOARD</span>
+      <h1>경남 공공 전기차 충전소<br>AI 피크 부하 관리 시스템</h1>
+      <p>
+        AI 기반 충전 수요 예측과 부하 분산 시뮬레이션으로<br>
+        전력 피크를 줄이고 효율적인 충전 환경을 제안합니다.
+      </p>
+    </section>
+
+    <div class="grid">
+      <div class="card">
+        <p>분석 대상 지역</p>
+        <div class="number">경상남도</div>
+        <span class="unit">창원시 시범 분석</span>
+      </div>
+      <div class="card">
+        <p>충전 수요 예측</p>
+        <div class="number">AI 분석</div>
+        <span class="unit">시간대별 수요 예측 예정</span>
+      </div>
+      <div class="card">
+        <p>부하 관리 목표</p>
+        <div class="number">PEAK ↓</div>
+        <span class="unit">전력 집중 완화</span>
+      </div>
+    </div>
+
+    <section class="panel">
+      <h2>충전 부하 분산 시뮬레이션</h2>
+      <p class="tag">아래 수치는 화면 기능 확인을 위한 예시 시뮬레이션입니다.</p>
+
+      <div class="bar-row">
+        <div class="bar-label">
+          <span>관리 전 예상 피크 부하</span>
+          <strong id="before">100%</strong>
+        </div>
+        <div class="bar-bg"><div class="bar" style="width:100%; background:#e6a34b"></div></div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">
+          <span>관리 후 시뮬레이션 부하</span>
+          <strong id="after">--</strong>
+        </div>
+        <div class="bar-bg"><div class="bar" id="afterBar" style="width:0%"></div></div>
+      </div>
+
+      <button onclick="runSimulation()">부하 분산 시뮬레이션 실행</button>
+      <div id="result">버튼을 눌러 예시 시뮬레이션을 실행해 보세요.</div>
+    </section>
+  </main>
+
+  <footer>
+    G-PEAK AI · AI & DX HACKATHON PROJECT · Prototype
+  </footer>
+
+  <script>
+    function runSimulation() {
+      const managedLoad = 72;
+      document.getElementById("after").textContent = managedLoad + "%";
+      document.getElementById("afterBar").style.width = managedLoad + "%";
+      document.getElementById("result").innerHTML =
+        "시뮬레이션 완료!<br>" +
+        "예시 기준 피크 부하 감소율: " + (100 - managedLoad) + "%<br>" +
+        "※ 실제 측정 데이터가 아닌 기능 확인용 예시 결과입니다.";
+    }
+  </script>
+</body>
+</html>
